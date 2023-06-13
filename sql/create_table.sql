@@ -1,6 +1,10 @@
--- auto-generated definition
-create database match_friends;
+# 数据库初始化
+# @author <a href="https://github.com/JianHuaDeng">hua</a>
+# @from <a href="https://blog.csdn.net/qq_59957669">hua的博客</a>
+create database if not exists match_friends;
 use match_friends;
+
+-- 用户表
 create table user
 (
     username     varchar(256)                       null comment '用户昵称',
@@ -21,4 +25,54 @@ create table user
     tags varchar(1024) null comment '标签列表'
 )
     comment '用户';
+
+-- 队伍表
+create table team
+(
+    id          bigint auto_increment comment 'id' primary key,
+    name        varchar(256)       not null comment '队伍名称',
+    description varchar(1024) null comment '描述',
+    maxNum      int      default 1 not null comment '最大人数',
+    expireTime  datetime null comment '过期时间',
+    userId      bigint comment '用户id（队长 id）',
+    status      int      default 0 not null comment '0 - 公开，1 - 私有，2 - 加密',
+    password    varchar(512) null comment '密码',
+    createTime  datetime default CURRENT_TIMESTAMP null comment '创建时间',
+    updateTime  datetime default CURRENT_TIMESTAMP null on update CURRENT_TIMESTAMP,
+    isDelete    tinyint  default 0 not null comment '是否删除'
+) comment '队伍';
+
+-- 用户队伍关系
+create table user_team
+(
+    id         bigint auto_increment comment 'id'
+        primary key,
+    userId     bigint comment '用户id',
+    teamId     bigint comment '队伍id',
+    joinTime   datetime null comment '加入时间',
+    createTime datetime default CURRENT_TIMESTAMP null comment '创建时间',
+    updateTime datetime default CURRENT_TIMESTAMP null on update CURRENT_TIMESTAMP,
+    isDelete   tinyint  default 0 not null comment '是否删除'
+) comment '用户队伍关系';
+
+create index idx_userId
+    on tag (userId);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
