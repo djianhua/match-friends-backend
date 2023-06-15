@@ -10,6 +10,7 @@ import com.hua.matchfriends.model.domain.Team;
 import com.hua.matchfriends.model.domain.User;
 import com.hua.matchfriends.model.dto.TeamQuery;
 import com.hua.matchfriends.model.request.TeamAddRequest;
+import com.hua.matchfriends.model.vo.TeamUserVO;
 import com.hua.matchfriends.service.TeamService;
 import com.hua.matchfriends.service.UserService;
 import lombok.extern.slf4j.Slf4j;
@@ -111,14 +112,12 @@ public class TeamController {
      * @return
      */
     @GetMapping("/list")
-    public BaseResponse<List<Team>> listTeams(TeamQuery teamQuery) {
+    public BaseResponse<List<TeamUserVO>> listTeams(TeamQuery teamQuery, HttpServletRequest request) {
         if (teamQuery == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        Team team = new Team();
-        BeanUtils.copyProperties(team, teamQuery);
-        QueryWrapper<Team> queryWrapper = new QueryWrapper<>(team);
-        List<Team> teamList = teamService.list(queryWrapper);
+        boolean isAdmin = userService.isAdmin(request);
+        List<TeamUserVO> teamList = teamService.listTeams(teamQuery, isAdmin);
         return ResultUtils.success(teamList);
     }
 

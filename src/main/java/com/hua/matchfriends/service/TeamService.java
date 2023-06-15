@@ -3,6 +3,10 @@ package com.hua.matchfriends.service;
 import com.hua.matchfriends.model.domain.Team;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.hua.matchfriends.model.domain.User;
+import com.hua.matchfriends.model.dto.TeamQuery;
+import com.hua.matchfriends.model.vo.TeamUserVO;
+
+import java.util.List;
 
 /**
 * @author 33116
@@ -12,5 +16,7 @@ import com.hua.matchfriends.model.domain.User;
 public interface TeamService extends IService<Team> {
 
     long addTeam(Team team, User loginUser);
+
+    List<TeamUserVO> listTeams(TeamQuery teamQuery, boolean isAdmin);
 
 }

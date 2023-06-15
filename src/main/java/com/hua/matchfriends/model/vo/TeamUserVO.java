@@ -1,24 +1,24 @@
-package com.hua.matchfriends.model.domain;
+package com.hua.matchfriends.model.vo;
 
-import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
 
 import java.io.Serializable;
 import java.util.Date;
 
 /**
- * 队伍实体
+ * 队伍和用户信息封装类（脱敏）
  *
  * @author <a href="https://github.com/JianHuaDeng">hua</a>
  * @from <a href="https://blog.csdn.net/qq_59957669">hua的博客</a>
  */
-@TableName(value = "team")
 @Data
-public class Team implements Serializable {
+public class TeamUserVO implements Serializable {
+
+    private static final long serialVersionUID = 1899063007109226944L;
+
     /**
      * id
      */
-    @TableId(type = IdType.AUTO)
     private Long id;
 
     /**
@@ -52,26 +52,27 @@ public class Team implements Serializable {
     private Integer status;
 
     /**
-     * 密码
-     */
-    private String password;
-
-    /**
      * 创建时间
      */
     private Date createTime;
 
     /**
-     *
+     * 更新时间
      */
     private Date updateTime;
 
     /**
-     * 是否删除
+     * 创建人用户信息
      */
-    @TableLogic
-    private Integer isDelete;
+    private UserVO createUser;
 
-    @TableField(exist = false)
-    private static final long serialVersionUID = 1L;
+    /**
+     * 已加入的用户数
+     */
+    private Integer hasJoinNum;
+
+    /**
+     * 是否已加入队伍
+     */
+    private boolean hasJoin = false;
 }
