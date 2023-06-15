@@ -19,8 +19,8 @@ spring:
   redis:
     port: 6379
     host: 192.168.88.136
-    database: 0
-    password: 123321
+    database: 1
+    password: hua666
 server:
   port: 8080
   servlet:

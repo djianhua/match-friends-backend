@@ -1,4 +1,4 @@
-package com.hua.matchfriends.model.domain.request;
+package com.hua.matchfriends.model.request;
 
 import lombok.Data;
 
