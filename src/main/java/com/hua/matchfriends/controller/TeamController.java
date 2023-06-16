@@ -10,6 +10,7 @@ import com.hua.matchfriends.model.domain.Team;
 import com.hua.matchfriends.model.domain.User;
 import com.hua.matchfriends.model.dto.TeamQuery;
 import com.hua.matchfriends.model.request.TeamAddRequest;
+import com.hua.matchfriends.model.request.TeamUpdateRequest;
 import com.hua.matchfriends.model.vo.TeamUserVO;
 import com.hua.matchfriends.service.TeamService;
 import com.hua.matchfriends.service.UserService;
@@ -74,15 +75,17 @@ public class TeamController {
 
     /**
      * 更新队伍
-     * @param team
+     * @param teamUpdateRequest
+     * @param request
      * @return
      */
     @PostMapping("/update")
-    public BaseResponse<Boolean> updateTeam(@RequestBody Team team) {
-        if (team == null) {
+    public BaseResponse<Boolean> updateTeam(@RequestBody TeamUpdateRequest teamUpdateRequest, HttpServletRequest request) {
+        if (teamUpdateRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        boolean result = teamService.updateById(team);
+        User loginUser = userService.getLoginUser(request);
+        boolean result = teamService.updateTeam(teamUpdateRequest, loginUser);
         if (!result) {
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "更新失败");
         }

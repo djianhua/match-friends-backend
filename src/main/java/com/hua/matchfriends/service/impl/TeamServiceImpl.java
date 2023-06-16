@@ -10,6 +10,7 @@ import com.hua.matchfriends.model.domain.User;
 import com.hua.matchfriends.model.domain.UserTeam;
 import com.hua.matchfriends.model.dto.TeamQuery;
 import com.hua.matchfriends.model.enums.TeamStatusEnum;
+import com.hua.matchfriends.model.request.TeamUpdateRequest;
 import com.hua.matchfriends.model.vo.TeamUserVO;
 import com.hua.matchfriends.model.vo.UserVO;
 import com.hua.matchfriends.service.TeamService;
@@ -186,6 +187,45 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
         }
         return teamUserVOList;
     }
+
+    @Override
+    public boolean updateTeam(TeamUpdateRequest teamUpdateRequest, User loginUser) {
+        if (teamUpdateRequest == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        Long id = teamUpdateRequest.getId();
+        if (id == null || id <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        Team oldTeam = this.getById(id);
+        if (oldTeam == null) {
+            throw new BusinessException(ErrorCode.NULL_ERROR, "队伍不存在");
+        }
+        // 只有管理员或者队伍的创建者才可以修改
+        if (oldTeam.getUserId() != loginUser.getId() && !userService.isAdmin(loginUser)) {
+            throw new BusinessException(ErrorCode.NO_AUTH);
+        }
+        // 如果队伍状态改为加密，必须要有密码
+        TeamStatusEnum statusEnum = TeamStatusEnum.getEnumByValue(teamUpdateRequest.getStatus());
+        if (statusEnum.equals(TeamStatusEnum.SECRET)) {
+            if (StringUtils.isBlank(teamUpdateRequest.getPassword())) {
+                throw new BusinessException(ErrorCode.PARAMS_ERROR, "加密房间必须设置密码");
+            }
+        }
+        Team updateTeam = new Team();
+        BeanUtils.copyProperties(teamUpdateRequest, updateTeam);
+        return this.updateById(updateTeam);
+    }
+
+
+
+
+
+
+
+
+
+
 }
 
 
