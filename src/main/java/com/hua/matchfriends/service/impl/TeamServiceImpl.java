@@ -10,6 +10,7 @@ import com.hua.matchfriends.model.domain.User;
 import com.hua.matchfriends.model.domain.UserTeam;
 import com.hua.matchfriends.model.dto.TeamQuery;
 import com.hua.matchfriends.model.enums.TeamStatusEnum;
+import com.hua.matchfriends.model.request.TeamJoinRequest;
 import com.hua.matchfriends.model.request.TeamUpdateRequest;
 import com.hua.matchfriends.model.vo.TeamUserVO;
 import com.hua.matchfriends.model.vo.UserVO;
@@ -18,6 +19,7 @@ import com.hua.matchfriends.mapper.TeamMapper;
 import com.hua.matchfriends.service.UserService;
 import com.hua.matchfriends.service.UserTeamService;
 import org.springframework.beans.BeanUtils;
+import org.springframework.data.querydsl.QuerydslUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -202,7 +204,7 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
             throw new BusinessException(ErrorCode.NULL_ERROR, "队伍不存在");
         }
         // 只有管理员或者队伍的创建者才可以修改
-        if (oldTeam.getUserId() != loginUser.getId() && !userService.isAdmin(loginUser)) {
+        if (oldTeam.getUserId() != loginUser.getId() && !userService.isAdmin(loginUser)){
             throw new BusinessException(ErrorCode.NO_AUTH);
         }
         // 如果队伍状态改为加密，必须要有密码
@@ -216,6 +218,70 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
         BeanUtils.copyProperties(teamUpdateRequest, updateTeam);
         return this.updateById(updateTeam);
     }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public boolean joinTeam(TeamJoinRequest teamJoinRequest, User loginUser) {
+        if (teamJoinRequest == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        Long teamId = teamJoinRequest.getTeamId();
+        if (teamId == null || teamId <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        Team team = this.getById(teamId);
+        if (team == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "队伍不存在");
+        }
+        Date expireTime = team.getExpireTime();
+        if (expireTime != null && expireTime.before(new Date())) {
+            throw  new BusinessException(ErrorCode.PARAMS_ERROR, "队伍信息已过期");
+        }
+        Integer status = team.getStatus();
+        TeamStatusEnum teamStatusEnum = TeamStatusEnum.getEnumByValue(status);
+        if (TeamStatusEnum.PRIVATE.equals(teamStatusEnum)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "禁止加入私有队伍");
+        }
+        String password = teamJoinRequest.getPassword();
+        if (TeamStatusEnum.SECRET.equals(teamStatusEnum)) {
+            if (StringUtils.isBlank(password) || !password.equals(team.getPassword())) {
+                throw new BusinessException(ErrorCode.PARAMS_ERROR, "密码出错");
+            }
+        }
+        // 该用户已加入的队伍数量 数据库查询所有放到下面， 减少时间
+        Long userId = loginUser.getId();
+        QueryWrapper<UserTeam> userTeamQueryWrapper = new QueryWrapper<>();
+        userTeamQueryWrapper.eq("userId", userId);
+        long hasJoinNum = userTeamService.count(userTeamQueryWrapper);
+        if (hasJoinNum > 5) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "最多创建和加入5个队伍");
+        }
+        // 不能重复加入已加入的队伍
+        userTeamQueryWrapper = new QueryWrapper<>();
+        userTeamQueryWrapper.eq("userId", userId);
+        userTeamQueryWrapper.eq("teamId", teamId);
+        long hasUserJoinTeam = userTeamService.count(userTeamQueryWrapper);
+        if (hasUserJoinTeam > 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "您已在该队伍中，不能重复加入队伍");
+        }
+        // 已加入队伍的人数
+        userTeamQueryWrapper = new QueryWrapper<>();
+        userTeamQueryWrapper.eq("teamId", teamId);
+        long teamHasJoinNum = userTeamService.count(userTeamQueryWrapper);
+        if (teamHasJoinNum >= team.getMaxNum()) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "队伍已满");
+        }
+        // 修改队伍信息
+        UserTeam userTeam = new UserTeam();
+        userTeam.setUserId(userId);
+        userTeam.setTeamId(teamId);
+        userTeam.setJoinTime(new Date());
+        return userTeamService.save(userTeam);
+    }
+
+
+
+
 
 
 

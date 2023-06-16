@@ -10,6 +10,7 @@ import com.hua.matchfriends.model.domain.Team;
 import com.hua.matchfriends.model.domain.User;
 import com.hua.matchfriends.model.dto.TeamQuery;
 import com.hua.matchfriends.model.request.TeamAddRequest;
+import com.hua.matchfriends.model.request.TeamJoinRequest;
 import com.hua.matchfriends.model.request.TeamUpdateRequest;
 import com.hua.matchfriends.model.vo.TeamUserVO;
 import com.hua.matchfriends.service.TeamService;
@@ -90,6 +91,22 @@ public class TeamController {
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "更新失败");
         }
         return ResultUtils.success(true);
+    }
+
+    /**
+     * 加入队伍
+     * @param teamJoinRequest
+     * @param request
+     * @return
+     */
+    @PostMapping("/join")
+    public BaseResponse<Boolean> joinTeam(@RequestBody TeamJoinRequest teamJoinRequest, HttpServletRequest request) {
+        if (teamJoinRequest == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        User loginUser = userService.getLoginUser(request);
+        boolean result = teamService.joinTeam(teamJoinRequest, loginUser);
+        return ResultUtils.success(result);
     }
 
     /**
