@@ -11,6 +11,7 @@ import com.hua.matchfriends.model.domain.User;
 import com.hua.matchfriends.model.dto.TeamQuery;
 import com.hua.matchfriends.model.request.TeamAddRequest;
 import com.hua.matchfriends.model.request.TeamJoinRequest;
+import com.hua.matchfriends.model.request.TeamQuitRequest;
 import com.hua.matchfriends.model.request.TeamUpdateRequest;
 import com.hua.matchfriends.model.vo.TeamUserVO;
 import com.hua.matchfriends.service.TeamService;
@@ -157,6 +158,16 @@ public class TeamController {
         QueryWrapper<Team> queryWrapper = new QueryWrapper<>(team);
         Page<Team> teamPage = teamService.page(page, queryWrapper);
         return ResultUtils.success(teamPage);
+    }
+
+    @PostMapping("/quit")
+    public BaseResponse<Boolean> quitTeam(@RequestBody TeamQuitRequest teamQuitRequest, HttpServletRequest request) {
+        if (teamQuitRequest == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        User loginUser = userService.getLoginUser(request);
+        boolean result = teamService.quitTeam(teamQuitRequest, loginUser);
+        return ResultUtils.success(result);
     }
 
 
