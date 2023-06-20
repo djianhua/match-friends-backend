@@ -18,6 +18,7 @@ import com.hua.matchfriends.service.TeamService;
 import com.hua.matchfriends.mapper.TeamMapper;
 import com.hua.matchfriends.service.UserService;
 import com.hua.matchfriends.service.UserTeamService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.querydsl.QuerydslUtils;
 import org.springframework.stereotype.Service;
@@ -35,6 +36,7 @@ import java.util.Optional;
 * @description 针对表【team(队伍)】的数据库操作Service实现
 * @createDate 2023-06-13 10:15:24
 */
+@Slf4j
 @Service
 public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
     implements TeamService{
@@ -203,8 +205,13 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
         if (oldTeam == null) {
             throw new BusinessException(ErrorCode.NULL_ERROR, "队伍不存在");
         }
+        if ((long)oldTeam.getUserId() == (long)loginUser.getId()) {
+            System.out.println("huahuahua");
+        }
         // 只有管理员或者队伍的创建者才可以修改
-        if (oldTeam.getUserId() != loginUser.getId() && !userService.isAdmin(loginUser)){
+        if (oldTeam.getUserId().longValue() != loginUser.getId().longValue() && !userService.isAdmin(loginUser)){
+            System.out.println("队伍创建者id" + oldTeam.getUserId());
+            System.out.println("当前登录用户id" + loginUser.getId());
             throw new BusinessException(ErrorCode.NO_AUTH);
         }
         // 如果队伍状态改为加密，必须要有密码
