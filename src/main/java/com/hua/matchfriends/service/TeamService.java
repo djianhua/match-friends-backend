@@ -39,4 +39,6 @@ public interface TeamService extends IService<Team> {
     boolean joinTeam(TeamJoinRequest teamJoinRequest, User loginUser);
 
     boolean quitTeam(TeamQuitRequest teamQuitRequest, User loginUser);
+
+    boolean deleteTeam(long id, User loginUser);
 }
