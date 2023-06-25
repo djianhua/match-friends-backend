@@ -8,3 +8,6 @@ create table tag (
     updateTime datetime default CURRENT_TIMESTAMP on update current_timestamp comment '更新时间',
     isDelete tinyint default 0 not null comment '是否删除'
 ) comment '标签表';
+
+use match_friends;
+delete from user where id > 200;

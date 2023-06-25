@@ -10,10 +10,7 @@ import com.hua.matchfriends.model.domain.Team;
 import com.hua.matchfriends.model.domain.User;
 import com.hua.matchfriends.model.domain.UserTeam;
 import com.hua.matchfriends.model.dto.TeamQuery;
-import com.hua.matchfriends.model.request.TeamAddRequest;
-import com.hua.matchfriends.model.request.TeamJoinRequest;
-import com.hua.matchfriends.model.request.TeamQuitRequest;
-import com.hua.matchfriends.model.request.TeamUpdateRequest;
+import com.hua.matchfriends.model.request.*;
 import com.hua.matchfriends.model.vo.TeamUserVO;
 import com.hua.matchfriends.service.TeamService;
 import com.hua.matchfriends.service.UserService;
@@ -71,10 +68,11 @@ public class TeamController {
      * @return
      */
     @PostMapping("/delete")
-    public BaseResponse<Boolean> deleteTeam(@RequestBody long id, HttpServletRequest request) {
-        if (id <= 0) {
+    public BaseResponse<Boolean> deleteTeam(@RequestBody DeleteRequest deleteRequest, HttpServletRequest request) {
+        if (deleteRequest == null || deleteRequest.getId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
+        long id = deleteRequest.getId();
         User loginUser = userService.getLoginUser(request);
         boolean result = teamService.deleteTeam(id, loginUser);
         if (!result) {
