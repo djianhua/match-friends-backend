@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.hua.matchfriends.common.ErrorCode;
 import com.hua.matchfriends.exception.BusinessException;
+import com.hua.matchfriends.mapper.UserTeamMapper;
 import com.hua.matchfriends.model.domain.Team;
 import com.hua.matchfriends.model.domain.User;
 import com.hua.matchfriends.model.domain.UserTeam;
@@ -26,6 +27,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -43,6 +45,8 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
 
     @Resource
     private UserTeamService userTeamService;
+    @Resource
+    private UserTeamMapper userTeamMapper;
     @Resource
     private UserService userService;
 
@@ -121,7 +125,7 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
     }
 
     @Override
-    public List<TeamUserVO> listTeams(TeamQuery teamQuery, boolean isAdmin) {
+    public List<TeamUserVO> listTeams(TeamQuery teamQuery, boolean isAdmin, HttpServletRequest request) {
         QueryWrapper<Team> queryWrapper = new QueryWrapper<>();
         // 组合查询条件 队伍id + 搜索关键字（name + expireTime） + name + description + maxNum + userId + status
         //            +
@@ -188,8 +192,22 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
             // 查询队伍人数
             Long count = this.countTeamUserByTeamId(team.getId());
             int count1 = count.intValue();
-            teamUserVO.setHasJoinNum(count1);
 
+            teamUserVO.setHasJoinNum(count1);
+            // 判断是否在队伍里
+            Long id = userService.getLoginUser(request).getId();
+            QueryWrapper<UserTeam> wrapper = new QueryWrapper<>();
+            wrapper.eq("teamId", team.getId());
+            wrapper.eq("userId", id);
+            wrapper.eq("isDelete", 0);
+
+            UserTeam userTeam = userTeamMapper.selectOne(wrapper);
+            if(userTeam==null) {
+                teamUserVO.setHasJoin(false);
+            }
+            else {
+                teamUserVO.setHasJoin(true);
+            }
             // 脱敏用户信息
             if (user != null) {
                 UserVO userVO = new UserVO();

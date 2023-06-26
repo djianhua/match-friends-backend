@@ -144,7 +144,7 @@ public class TeamController {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         boolean isAdmin = userService.isAdmin(request);
-        List<TeamUserVO> teamList = teamService.listTeams(teamQuery, isAdmin);
+        List<TeamUserVO> teamList = teamService.listTeams(teamQuery, isAdmin, request);
         return ResultUtils.success(teamList);
     }
 
@@ -161,7 +161,7 @@ public class TeamController {
         }
         User loginUser = userService.getLoginUser(request);
         teamQuery.setUserId(loginUser.getId());
-        List<TeamUserVO> teamList = teamService.listTeams(teamQuery, true);
+        List<TeamUserVO> teamList = teamService.listTeams(teamQuery, true, request);
         return ResultUtils.success(teamList);
     }
 
@@ -185,7 +185,7 @@ public class TeamController {
                 .collect(Collectors.groupingBy(UserTeam::getTeamId));
         ArrayList<Long> idList = new ArrayList<>(listMap.keySet());
         teamQuery.setIdList(idList);
-        List<TeamUserVO> teamList = teamService.listTeams(teamQuery, true);
+        List<TeamUserVO> teamList = teamService.listTeams(teamQuery, true, request);
         return ResultUtils.success(teamList);
     }
     /**

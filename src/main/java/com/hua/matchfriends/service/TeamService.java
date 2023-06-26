@@ -9,6 +9,7 @@ import com.hua.matchfriends.model.request.TeamQuitRequest;
 import com.hua.matchfriends.model.request.TeamUpdateRequest;
 import com.hua.matchfriends.model.vo.TeamUserVO;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 /**
@@ -20,7 +21,7 @@ public interface TeamService extends IService<Team> {
 
     long addTeam(Team team, User loginUser);
 
-    List<TeamUserVO> listTeams(TeamQuery teamQuery, boolean isAdmin);
+    List<TeamUserVO> listTeams(TeamQuery teamQuery, boolean isAdmin, HttpServletRequest request);
 
     /**
      * 修改队伍
